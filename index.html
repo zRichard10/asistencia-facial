@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Control de asistencia con reconocimiento facial">
+  <title>Control de Asistencia</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loaderText">Cargando modelos de IA...</div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header__icon">🎓</div>
+  <div>
+    <div class="header__title">Asistencia Facial</div>
+    <div class="header__sub">Reconocimiento en tiempo real</div>
+  </div>
+  <div class="header__badge" id="statusBadge">Cargando...</div>
+</header>
+
+<!-- Views -->
+<main class="views">
+
+  <!-- ═══ TAB 1: Tomar Asistencia ═══ -->
+  <section class="view active" id="viewAttendance">
+    <div class="camera-wrap">
+      <video id="camVideo" autoplay muted playsinline></video>
+      <canvas id="camCanvas"></canvas>
+      <div class="camera-placeholder" id="camPlaceholder">
+        <span>📷</span><span>Toque para activar la camara</span>
+      </div>
+    </div>
+    <button class="btn btn--primary btn--big" id="btnTakeAttendance" disabled>
+      📸 Tomar Asistencia
+    </button>
+    <!-- Results -->
+    <div id="resultsSection" style="display:none">
+      <div class="card">
+        <div class="card__head">
+          <div class="card__title">📊 Resultado</div>
+          <span id="resultCount" style="font-size:.78rem;color:var(--text2)"></span>
+        </div>
+        <div class="stats" style="padding:12px">
+          <div class="stat"><div class="stat__val stat__val--g" id="rPresent">0</div><div class="stat__lbl">Presentes</div></div>
+          <div class="stat"><div class="stat__val stat__val--r" id="rAbsent">0</div><div class="stat__lbl">Ausentes</div></div>
+          <div class="stat"><div class="stat__val stat__val--a" id="rTotal">0</div><div class="stat__lbl">Total</div></div>
+        </div>
+        <div class="progress" style="margin:0 12px 12px"><div class="progress__fill" id="rProgress" style="width:0%"></div></div>
+      </div>
+      <div id="resultsList" style="display:flex;flex-direction:column;gap:6px"></div>
+      <div class="btn-row">
+        <button class="btn btn--success" id="btnSaveSession" style="flex:1">💾 Guardar</button>
+        <button class="btn" id="btnExportResult" style="flex:1">📥 Excel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TAB 2: Registrar Estudiantes ═══ -->
+  <section class="view" id="viewStudents">
+    <div class="card">
+      <div class="card__head">
+        <div class="card__title">➕ Registrar Estudiante</div>
+      </div>
+      <div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+        <div class="camera-wrap" style="aspect-ratio:1/1;max-width:220px;margin:0 auto">
+          <video id="regVideo" autoplay muted playsinline></video>
+          <img id="regPreview" style="display:none" alt="preview">
+          <div class="camera-placeholder" id="regPlaceholder"><span>👤</span><span>Camara</span></div>
+        </div>
+        <div class="btn-row" style="justify-content:center">
+          <button class="btn btn--primary" id="btnRegCapture">📸 Capturar</button>
+          <button class="btn" id="btnRegRetake" style="display:none">🔄 Retomar</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre Completo</label>
+          <input class="form-input" id="regName" placeholder="Ej: Juan Carlos Perez">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Codigo / ID</label>
+          <input class="form-input" id="regCode" placeholder="Ej: EST-001">
+        </div>
+        <button class="btn btn--success btn--big" id="btnRegSave" disabled>✅ Registrar Estudiante</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card__head">
+        <div class="card__title">👥 Estudiantes (<span id="studentCountLabel">0</span>)</div>
+      </div>
+      <div id="studentList" style="padding:10px;display:flex;flex-direction:column;gap:6px">
+        <div class="empty"><div class="empty__icon">👤</div>No hay estudiantes registrados</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TAB 3: Historial ═══ -->
+  <section class="view" id="viewHistory">
+    <div class="card">
+      <div class="card__head">
+        <div class="card__title">📋 Historial de Sesiones</div>
+        <button class="btn" id="btnExportAll" style="padding:6px 12px;font-size:.72rem">📥 Excel</button>
+      </div>
+      <div id="historyList" style="padding:10px;display:flex;flex-direction:column;gap:8px">
+        <div class="empty"><div class="empty__icon">📋</div>No hay sesiones guardadas</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Bottom Nav -->
+<nav class="nav">
+  <button class="nav__btn active" data-tab="viewAttendance">
+    <span class="nav__icon">📸</span>Asistencia
+  </button>
+  <button class="nav__btn" data-tab="viewStudents">
+    <span class="nav__icon">👥</span>Estudiantes
+  </button>
+  <button class="nav__btn" data-tab="viewHistory">
+    <span class="nav__icon">📋</span>Historial
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="toast-box" id="toastBox"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1/dist/face-api.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
